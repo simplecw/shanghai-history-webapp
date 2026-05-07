@@ -4,6 +4,8 @@ import Sidebar from './components/Sidebar';
 import HomePage from './pages/HomePage';
 import MapsPage from './pages/MapsPage';
 import BuildingsPage from './pages/BuildingsPage';
+import PhotosPage from './pages/PhotosPage';
+import TimelinePage from './pages/TimelinePage';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -20,6 +22,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/maps" element={<MapsPage />} />
             <Route path="/buildings" element={<BuildingsPage />} />
+            <Route path="/photos" element={<PhotosPage />} />
+            <Route path="/timeline" element={<TimelinePage />} />
           </Routes>
         </main>
       </div>
