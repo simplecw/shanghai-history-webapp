@@ -31,6 +31,8 @@ class ShanghaiHistoryBuilding(Base):
     DATE_END = Column(String(20))
     X_AXIS = Column(DECIMAL(15, 4))
     Y_AXIS = Column(DECIMAL(15, 4))
+    BD_LNG = Column(DECIMAL(21, 15))
+    BD_LAT = Column(DECIMAL(20, 15))
 
 
 class ShanghaiBuildingLink(Base):
@@ -59,6 +61,32 @@ class BuildingPhotography(Base):
     ID = Column(Integer, primary_key=True)
     BUILDING_ID = Column(Integer)
     PHOTOGRAPHY_ID = Column(Integer)
+
+
+class ShanghaiHistoryBuildingType(Base):
+    __tablename__ = "Shanghai_history_building_type"
+
+    ID = Column(Integer, primary_key=True)
+    BUILDING_ID = Column(Integer)
+    CODE_TYPE = Column(String(50))
+    CODE_VALUE = Column(String(100))
+
+
+class ShanghaiHistoryPhotographyType(Base):
+    __tablename__ = "SHANGHAI_HISTORY_PHOTOGRAPHY_type"
+
+    ID = Column(Integer, primary_key=True)
+    PHOTOGRAPHY_ID = Column(Integer)
+    CODE_TYPE = Column(String(50))
+    CODE_VALUE = Column(String(100))
+
+
+class ShanghaiHistoryPhotographyTag(Base):
+    __tablename__ = "SHANGHAI_HISTORY_PHOTOGRAPHY_tag"
+
+    ID = Column(Integer, primary_key=True)
+    PHOTOGRAPHY_ID = Column(Integer)
+    TAG = Column(String(100))
 
 
 class HistoryMap(Base):

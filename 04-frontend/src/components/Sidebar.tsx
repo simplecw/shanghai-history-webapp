@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 const menuItems = [
   { path: '/', label: '历史保护建筑', icon: '🏛️' },
   { path: '/maps', label: '历史地图', icon: '🗺️' },
+  { path: '/buildings', label: '历史建筑管理', icon: '🏢' },
 ];
 
 interface SidebarProps {

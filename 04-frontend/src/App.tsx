@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import HomePage from './pages/HomePage';
 import MapsPage from './pages/MapsPage';
+import BuildingsPage from './pages/BuildingsPage';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -18,6 +19,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/maps" element={<MapsPage />} />
+            <Route path="/buildings" element={<BuildingsPage />} />
           </Routes>
         </main>
       </div>

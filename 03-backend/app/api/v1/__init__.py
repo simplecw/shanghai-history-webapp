@@ -1,5 +1,2 @@
-from fastapi import APIRouter
-from app.api.v1 import buildings, maps
-api_router = APIRouter()
-api_router.include_router(buildings.router)
-api_router.include_router(maps.router)
+from app.api.v1.buildings import router as buildings_router
+from app.api.v1.maps import maps_router as photos_router, code_router

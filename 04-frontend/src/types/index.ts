@@ -64,6 +64,73 @@ export interface MapDetail {
   source?: string;
 }
 
+// ============ Historical Building Types ============
+
+export interface CodeTypeItem {
+  codeType: string;
+  codeValue: string;
+  codeNameCn: string;
+}
+
+export interface HistoricalBuildingItem {
+  buildingId: number;
+  buildingName: string;
+  buildingChineseName: string;
+  buildingAddress: string;
+  dateStart: string;
+  dateEnd: string;
+  xAxis?: number;
+  yAxis?: number;
+  bdLng?: number;
+  bdLat?: number;
+  types: CodeTypeItem[];
+  photoCount: number;
+}
+
+export interface HistoricalBuildingDetail {
+  buildingId: number;
+  buildingName: string;
+  buildingChineseName: string;
+  buildingAddress: string;
+  dateStart: string;
+  dateEnd: string;
+  xAxis?: number;
+  yAxis?: number;
+  types: CodeTypeItem[];
+  photos: PhotographyItem[];
+}
+
+// ============ Photo Types ============
+
+export interface PhotoItem {
+  id: number;
+  chineseTitle: string;
+  englishTitle: string;
+  source: string;
+  year: string;
+  timePeriod: string;
+  imageFilename: string;
+  tags: string[];
+  types: CodeTypeItem[];
+  buildingCount: number;
+}
+
+export interface PhotoDetail {
+  id: number;
+  chineseTitle: string;
+  englishTitle: string;
+  source: string;
+  year: string;
+  timePeriod: string;
+  description: string;
+  imageFilename: string;
+  tags: string[];
+  types: CodeTypeItem[];
+  buildings: Array<{ buildingId: number; buildingChineseName: string }>;
+}
+
+// ============ API Response ============
+
 export interface ApiResponse<T> {
   code: number;
   message: string;

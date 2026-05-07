@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import config
 from .api.v1.buildings import router as buildings_router
+from .api.v1.maps import router as photos_router
+from .api.v1.maps import code_router
 
 app = FastAPI(title="Shanghai History API", version="1.0")
 
@@ -13,7 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(buildings_router, prefix=config.API_V1_PREFIX, tags=["buildings"])
+app.include_router(buildings_router, prefix=config.API_V1_PREFIX)
+app.include_router(photos_router, prefix=config.API_V1_PREFIX)
+app.include_router(code_router, prefix=config.API_V1_PREFIX)
 
 
 @app.get("/health")

@@ -477,7 +477,7 @@ export default function BuildingsPage() {
     setLoading(true);
     try {
       const result = await fetchHistoricalBuildings({
-        chineseName: chineseName || undefined,
+        name: chineseName || undefined,
         buildingType: buildingType || undefined,
         hasPhotos: hasPhotos === 'true' ? true : hasPhotos === 'false' ? false : undefined,
         page,
