@@ -129,6 +129,60 @@ export interface PhotoDetail {
   buildings: Array<{ buildingId: number; buildingChineseName: string }>;
 }
 
+// ============ Timeline / Events Types ============
+
+export interface TimelineEvent {
+  eventId: number;
+  eventName: string;
+  eventYear: string;
+  eventDate?: string;
+  reignTitle?: string;
+  eventDescription?: string;
+  eventImportance: string;
+  eventCategory: string;
+  eventSubCategory?: string;
+  showDate?: Date;
+}
+
+export interface CategoryCount {
+  category: string;
+  count: number;
+}
+
+export interface ImportanceLevelCount {
+  level: string;
+  label: string;
+  count: number;
+}
+
+export interface PopulationRecord {
+  year: string;
+  location: string;
+  locationName: string;
+  value: number;
+}
+
+export interface LandValuationRecord {
+  year: string;
+  location: string;
+  locationName: string;
+  statisticsGroup?: string;
+  value: number;
+}
+
+export interface TradeRecord {
+  year: string;
+  importsTotal: number;
+  importsShanghai: number;
+  exportsTotal: number;
+  exportsShanghai: number;
+  tradeTotal: number;
+  tradeShanghai: number;
+  importsRatio: number;
+  exportsRatio: number;
+  tradeRatio: number;
+}
+
 // ============ API Response ============
 
 export interface ApiResponse<T> {
