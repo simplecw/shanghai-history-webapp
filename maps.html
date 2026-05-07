@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>历史地图 - 上海历史研究系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+    th { background-color: #f9fafb; }
+    tr:hover { background-color: #eff6ff; cursor: pointer; }
+    .selected { background-color: #dbeafe !important; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4">
+  <div id="app"></div>
+  <script>
+    const API_BASE = 'http://localhost:5205/api/v1';
+    const FILTER_FIELDS = [
+      { key: 'mapType', label: '地图类型', apiKey: 'MAP_TYPE' },
+      { key: 'subtype', label: '子类型', apiKey: 'SUBTYPE' },
+      { key: 'tags', label: '标签', apiKey: 'TAGS' },
+      { key: 'series', label: '系列', apiKey: 'SERIES' },
+      { key: 'clarity', label: '清晰度', apiKey: 'CLARITY' },
+      { key: 'importance', label: '重要性', apiKey: 'IMPORTANCE' },
+      { key: 'usageSuggestions', label: '使用建议', apiKey: 'USAGE_SUGGESTIONS' },
+      { key: 'source', label: '来源', apiKey: 'SOURCE' }
+    ];
+    const DISPLAY_FIELDS = [
+      { key: 'title', label: '标题' }, { key: 'chineseName', label: '中文名' },
+      { key: 'foreignName', label: '外文名' }, { key: 'year', label: '年份' },
+      { key: 'era', label: '时代' }, { key: 'mapType', label: '地图类型' },
+      { key: 'subtype', label: '子类型' }, { key: 'tags', label: '标签' },
+      { key: 'series', label: '系列' }, { key: 'source', label: '来源' }
+    ];
+    let maps = [], uniqueValues = {}, filters = {}, selectedIndex = 0, isModalOpen = false;
+    async function loadMaps() {
+      const params = new URLSearchParams({ page: '1', size: '1000' });
+      for (const f of FILTER_FIELDS) if (filters[f.key]) params.append(f.apiKey, filters[f.key]);
+      try {
+        const r = await fetch(`${API_BASE}/maps?${params}`);
+        const d = await r.json();
+        maps = d.data.list; uniqueValues = d.data.uniqueValues; selectedIndex = 0; render();
+      } catch (e) { console.error(e); }
+    }
+    function getMapImageUrl(fn) { return fn ? `/data/${fn}` : ''; }
+    function handleFilterChange(k, v) { filters[k] = v; loadMaps(); }
+    function resetFilters() { filters = {}; loadMaps(); }
+    function handleRowClick(i) { selectedIndex = i; isModalOpen = true; render(); }
+    function closeModal() { isModalOpen = false; render(); }
+    function navigatePrev() { selectedIndex = (selectedIndex - 1 + maps.length) % maps.length; render(); }
+    function navigateNext() { selectedIndex = (selectedIndex + 1) % maps.length; render(); }
+    function openLightbox() {
+      const url = getMapImageUrl(maps[selectedIndex].imageFilename);
+      if (!url) return;
+      const lb = document.createElement('div');
+      lb.id = 'lightbox';
+      lb.style = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:3000;';
+      lb.innerHTML = `<button onclick="navigatePrev();updateLightbox();" style="position:absolute;left:20px;padding:15px;background:rgba(255,255,255,0.2);border:none;border-radius:50%;color:white;font-size:24px;cursor:pointer;">&#8592;</button><img src="${url}" style="max-width:95vw;max-height:95vh;object-fit:contain;" onclick="closeLightbox();" /><button onclick="navigateNext();updateLightbox();" style="position:absolute;right:20px;padding:15px;background:rgba(255,255,255,0.2);border:none;border-radius:50%;color:white;font-size:24px;cursor:pointer;">&#8594;</button><div style="position:absolute;bottom:20px;color:white;font-size:14px;">${selectedIndex + 1} / ${maps.length} &#183; ESC &#183; &#8592; &#8594;</div>`;
+      lb.onclick = closeLightbox;
+      document.body.appendChild(lb);
+    }
+    function closeLightbox() { const l = document.getElementById('lightbox'); if (l) l.remove(); }
+    function updateLightbox() { const img = document.querySelector('#lightbox img'); if (img) img.src = getMapImageUrl(maps[selectedIndex].imageFilename); const c = document.querySelector('#lightbox > div:last-child'); if (c) c.textContent = `${selectedIndex + 1} / ${maps.length} · ESC · ← →`; }
+    document.addEventListener('keydown', e => {
+      if (isModalOpen && !document.getElementById('lightbox')) { if (e.key === 'ArrowRight') { e.preventDefault(); navigateNext(); } if (e.key === 'ArrowLeft') { e.preventDefault(); navigatePrev(); } if (e.key === 'Escape') { e.preventDefault(); closeModal(); } }
+      if (document.getElementById('lightbox')) { if (e.key === 'ArrowRight') { e.preventDefault(); navigateNext(); updateLightbox(); } if (e.key === 'ArrowLeft') { e.preventDefault(); navigatePrev(); updateLightbox(); } if (e.key === 'Escape') { e.preventDefault(); closeLightbox(); } }
+    });
+    function render() {
+      const app = document.getElementById('app');
+      let filterHTML = '<div class="bg-white rounded-lg shadow p-4 mb-4"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">';
+      for (const f of FILTER_FIELDS) { const opts = uniqueValues[f.apiKey] || []; filterHTML += `<div><label class="block text-sm font-medium text-gray-700 mb-1">${f.label}</label><select id="filter-${f.key}" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" onchange="handleFilterChange('${f.key}', this.value)"><option value="">全部</option>${opts.map(o => `<option value="${o}" ${filters[f.key] === o ? 'selected' : ''}>${o}</option>`).join('')}</select></div>`; }
+      filterHTML += '</div><div class="mt-4 flex justify-end"><button onclick="resetFilters()" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">重置筛选</button></div></div>';
+      let tableHTML = '<div class="bg-white rounded-lg shadow overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-50 border-b"><tr><th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>';
+      for (const f of DISPLAY_FIELDS) tableHTML += `<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">${f.label}</th>`;
+      tableHTML += '</tr></thead><tbody class="divide-y">';
+      maps.forEach((m, i) => { tableHTML += `<tr class="hover:bg-blue-50 cursor-pointer transition ${selectedIndex === i ? 'selected' : ''}" onclick="handleRowClick(${i})"><td class="px-4 py-3 text-gray-500">${i + 1}</td>`; for (const f of DISPLAY_FIELDS) tableHTML += `<td class="px-4 py-3 text-gray-800">${m[f.key] || '-'}</td>`; tableHTML += '</tr>'; });
+      tableHTML += '</tbody></table></div>'; if (maps.length === 0) tableHTML += '<div class="text-center py-8 text-gray-500">没有找到地图</div>'; tableHTML += '</div>';
+      let modalHTML = '';
+      if (isModalOpen && maps[selectedIndex]) {
+        const cm = maps[selectedIndex], imgUrl = getMapImageUrl(cm.imageFilename);
+        let infoHTML = '<div class="space-y-3">'; for (const f of DISPLAY_FIELDS) infoHTML += `<div><label class="text-sm font-medium text-gray-500">${f.label}</label><p class="text-gray-800">${cm[f.key] || '-'}</p></div>`; infoHTML += '</div>';
+        modalHTML = `<div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:2000;padding:20px;" onclick="closeModal()"><div style="background:white;border-radius:8px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);max-width:1200px;width:100%;max-height:90vh;overflow:auto;" onclick="event.stopPropagation()"><div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:white;"><div style="display:flex;align-items:center;gap:16px;"><span style="font-size:18px;font-weight:600;">${selectedIndex + 1} / ${maps.length}</span><span style="color:#666;">${cm.chineseName || cm.title || '未命名地图'}</span></div><div style="display:flex;gap:8px;"><button onclick="navigatePrev();render();" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">&#8592; 上一个</button><button onclick="navigateNext();render();" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">下一个 &#8594;</button><button onclick="closeModal();" class="px-3 py-1 text-sm bg-red-100 hover:bg-red-200 text-red-600 rounded">关闭 (ESC)</button></div></div><div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;"><div ${imgUrl ? 'style="cursor:pointer;" onclick="openLightbox();"' : ''}>${imgUrl ? `<img src="${imgUrl}" style="width:100%;height:auto;border-radius:8px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);" /><p style="text-align:center;font-size:12px;color:#666;margin-top:8px;">点击放大</p>` : '<div style="background:#e5e7eb;border-radius:8px;height:256px;display:flex;align-items:center;justify-content:center;color:#666;">无图片</div>'}</div>${infoHTML}</div></div></div>`;
+      }
+      app.innerHTML = `<div style="margin-bottom:24px;"><h1 style="font-size:24px;font-weight:700;color:#1f2937;">历史地图</h1><p style="color:#666;margin-top:4px;">共 ${maps.length} 张地图</p></div>${filterHTML}${tableHTML}${modalHTML}`;
+    }
+    loadMaps();
+  </script>
+</body>
+</html>

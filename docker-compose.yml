@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./04-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5105:5105"
+    volumes:
+      - ./data:/usr/share/nginx/html/data:ro
+
+  backend:
+    build:
+      context: ./03-backend
+      dockerfile: Dockerfile
+    ports:
+      - "5205:5205"
+    environment:
+      - DB_HOST=192.168.1.108
+      - DB_PORT=3306
+      - DB_USER=chenwei
+      - DB_PASSWORD=761211
+      - DB_NAME=SHANGHAI_HISTORY
