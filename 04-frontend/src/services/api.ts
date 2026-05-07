@@ -1,4 +1,4 @@
-import type { BuildingItem, BuildingDetail, MapItem, MapDetail, HistoricalBuildingItem, HistoricalBuildingDetail, PhotoItem, PhotoDetail } from '../types';
+import type { BuildingItem, BuildingDetail, MapItem, MapDetail, HistoricalBuildingItem, HistoricalBuildingDetail, PhotoItem, PhotoDetail, TimelineEvent, CategoryCount, ImportanceLevelCount, PopulationRecord, LandValuationRecord, TradeRecord } from '../types';
 
 const API_BASE = 'http://localhost:5205/api/v1';
 
@@ -43,7 +43,7 @@ export async function fetchHistoricalBuildings(filters: {
   if (filters.buildingType) params.append('buildingType', filters.buildingType);
   if (filters.dateStart) params.append('dateStart', filters.dateStart);
   if (filters.dateEnd) params.append('dateEnd', filters.dateEnd);
-  if (filters.hasPhotos) params.append('hasPhotos', 'true');
+  if (filters.hasPhotos !== undefined) params.append('hasPhotos', String(filters.hasPhotos));
   
   const res = await fetch(`${API_BASE}/historical-buildings?${params}`);
   const json = await res.json();
@@ -209,6 +209,12 @@ export async function fetchPhotoTags(): Promise<string[]> {
   return json.data || [];
 }
 
+export async function fetchPhotoSources(): Promise<string[]> {
+  const res = await fetch(`${API_BASE}/photo-sources`);
+  const json = await res.json();
+  return json.data || [];
+}
+
 export async function fetchPhotoTypes(): Promise<Array<{ codeType: string; codeValue: string; codeNameCn: string }>> {
   const res = await fetch(`${API_BASE}/photo-types`);
   const json = await res.json();
@@ -240,8 +246,55 @@ export async function fetchMapDetail(id: number): Promise<MapDetail | null> {
 
 // ============ Image URL ============
 
+const IMAGE_BASE = 'http://localhost:5105/data';
+
 export function getImageUrl(filename: string | undefined): string {
   if (!filename) return 'https://via.placeholder.com/400x300?text=No+Image';
   if (filename.startsWith('http')) return filename;
-  return `http://localhost:5205/data/${filename}`;
+  return `${IMAGE_BASE}/${filename}`;
+}
+
+// ============ Timeline / Events API ============
+
+export async function fetchTimelineEvents(filters: {
+  categories?: string;
+  importanceLevels?: string;
+}): Promise<{ events: TimelineEvent[]; total: number; yearRange: { min: string; max: string } }> {
+  const params = new URLSearchParams();
+  if (filters.categories) params.append('categories', filters.categories);
+  if (filters.importanceLevels) params.append('importance_levels', filters.importanceLevels);
+  
+  const res = await fetch(`${API_BASE}/events?${params}`);
+  const json = await res.json();
+  return json.data || { events: [], total: 0, yearRange: { min: '1842', max: '1949' } };
+}
+
+export async function fetchEventCategories(): Promise<CategoryCount[]> {
+  const res = await fetch(`${API_BASE}/events/categories`);
+  const json = await res.json();
+  return json.data || [];
+}
+
+export async function fetchImportanceLevels(): Promise<ImportanceLevelCount[]> {
+  const res = await fetch(`${API_BASE}/events/importance-levels`);
+  const json = await res.json();
+  return json.data || [];
+}
+
+export async function fetchPopulationData(): Promise<PopulationRecord[]> {
+  const res = await fetch(`${API_BASE}/trend/population`);
+  const json = await res.json();
+  return json.data?.records || [];
+}
+
+export async function fetchLandValuationData(): Promise<LandValuationRecord[]> {
+  const res = await fetch(`${API_BASE}/trend/land-valuation`);
+  const json = await res.json();
+  return json.data?.records || [];
+}
+
+export async function fetchTradeData(): Promise<TradeRecord[]> {
+  const res = await fetch(`${API_BASE}/trend/trade`);
+  const json = await res.json();
+  return json.data?.records || [];
 }
